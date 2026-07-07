@@ -55,7 +55,7 @@ export default function Home() {
 
       {error && <div className="error">{error}</div>}
 
-      <div className="card">
+      <div className="card g-left">
         <label htmlFor="title">What's the occasion?</label>
         <input
           id="title"
@@ -67,7 +67,7 @@ export default function Home() {
         />
       </div>
 
-      <div className="card">
+      <div className="card g-right">
         <label>Which dates could work?</label>
         <DragCalendar selected={dates} onChange={setDates} />
         {dates.length > 0 && (
@@ -77,7 +77,7 @@ export default function Home() {
         )}
       </div>
 
-      <div className="card">
+      <div className="card g-left">
         <label htmlFor="name">Your name (optional)</label>
         <input
           id="name"
@@ -91,7 +91,7 @@ export default function Home() {
 
       <button
         type="button"
-        className="btn-primary"
+        className="btn-primary g-left"
         disabled={busy || title.trim() === '' || dates.length === 0}
         onClick={create}
       >

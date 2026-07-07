@@ -211,7 +211,7 @@ export default function Admin() {
 
       {error && <div className="error">{error}</div>}
 
-      <div className="card invite">
+      <div className="card invite g-left">
         <h2>📣 Invite your people</h2>
         <ShareCard
           url={shareUrl}
@@ -220,7 +220,7 @@ export default function Admin() {
         />
       </div>
 
-      <div className="card">
+      <div className="card g-right">
         <h2>Availability so far</h2>
         {editing ? (
           <>
@@ -277,7 +277,7 @@ export default function Admin() {
       </div>
 
       {event.participants.length > 0 && !editing && (
-        <div className="card">
+        <div className="card g-left">
           <h2>Responses</h2>
           {event.participants.map((p) => (
             <div key={p.id} className="participant-row">

@@ -159,7 +159,7 @@ export default function DragCalendar({
         </button>
       </div>
       <div
-        className="cal-grid"
+        className={`cal-grid${readOnly ? '' : ' interactive'}`}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endStroke}

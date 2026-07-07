@@ -41,7 +41,7 @@ body {
 .page {
   max-width: 480px;
   margin: 0 auto;
-  padding: 16px 16px calc(48px + env(safe-area-inset-bottom));
+  padding: 12px 14px calc(40px + env(safe-area-inset-bottom));
 }
 
 .brand {
@@ -60,14 +60,15 @@ body {
 }
 
 h1 {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   letter-spacing: -0.02em;
-  margin: 8px 0 4px;
+  margin: 6px 0 2px;
 }
 
 .tagline {
   color: var(--muted);
-  margin: 0 0 20px;
+  font-size: 0.9rem;
+  margin: 0 0 14px;
 }
 
 .card {
@@ -75,8 +76,8 @@ h1 {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
-  padding: 18px;
-  margin-bottom: 16px;
+  padding: 16px 14px;
+  margin-bottom: 12px;
 }
 
 .card h2 {
@@ -204,13 +205,13 @@ a.btn-share:active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
   background: var(--bg);
   border: 1.5px solid var(--border);
   color: var(--text);
   font-weight: 700;
-  font-size: 0.85rem;
-  padding: 10px 12px;
+  font-size: 0.82rem;
+  padding: 9px 10px;
   border-radius: 999px;
   text-decoration: none;
   transition: transform 0.1s ease, background 0.15s;
@@ -355,11 +356,22 @@ a.btn-share:active {
   cursor: default;
 }
 
+/* Side gutters leave thumb room to scroll the page past the calendar;
+   only an *interactive* grid captures touch (read-only ones scroll freely). */
 .cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 4px;
+  margin: 0 14px;
+  touch-action: pan-y;
+}
+
+.cal-grid.interactive {
   touch-action: none;
+}
+
+.cal-header {
+  padding: 0 14px;
 }
 
 .cal-dow {
@@ -521,11 +533,38 @@ a.btn-share:active {
   margin-left: auto;
 }
 
-@media (min-width: 560px) {
+/* Desktop: two columns so nothing sits below the fold. Header rows span both;
+   cards opt into a side with .g-left / .g-right (the calendar column). */
+@media (min-width: 880px) {
   .page {
-    padding-top: 32px;
+    max-width: 940px;
+    padding-top: 28px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 24px;
+    align-items: start;
+  }
+  .page > * {
+    grid-column: 1 / -1;
+  }
+  .page > .g-left {
+    grid-column: 1;
+  }
+  .page > .g-right {
+    grid-column: 2;
+    grid-row: span 8;
   }
   h1 {
     font-size: 1.8rem;
+  }
+  .card {
+    padding: 20px;
+  }
+  .cal-grid,
+  .cal-header {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+    padding-right: 0;
   }
 }

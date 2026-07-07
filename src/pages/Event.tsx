@@ -129,7 +129,7 @@ export default function Event() {
 
       {error && <div className="error">{error}</div>}
 
-      <div className="card">
+      <div className="card g-left">
         <label htmlFor="name">Your name</label>
         <input
           id="name"
@@ -144,7 +144,7 @@ export default function Event() {
         />
       </div>
 
-      <div className="card">
+      <div className="card g-right">
         <label>When are you free?</label>
         <DragCalendar
           selected={dates}
@@ -160,7 +160,7 @@ export default function Event() {
 
       <button
         type="button"
-        className="btn-primary"
+        className="btn-primary g-left"
         disabled={busy || name.trim() === '' || saved}
         onClick={submit}
       >
@@ -173,7 +173,7 @@ export default function Event() {
               : 'Send my availability'}
       </button>
 
-      <div className="card" style={{ marginTop: 24 }}>
+      <div className="card g-left" style={{ marginTop: 24 }}>
         <h2>Who's free when</h2>
         <ResultsList dates={event.dates} participants={event.participants} />
       </div>
