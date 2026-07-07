@@ -252,6 +252,16 @@ export default function Admin() {
           </>
         ) : (
           <>
+            <div className="share-row" style={{ margin: '0 0 14px' }}>
+              <Link className="btn-secondary" to={`/${event.share_token}`}>
+                {editTokenFor(event.share_token)
+                  ? 'Edit your availability'
+                  : 'Add your availability'}
+              </Link>
+              <button type="button" className="btn-secondary" onClick={startEditing}>
+                Edit title or dates
+              </button>
+            </div>
             <DragCalendar
               selected={[]}
               candidates={event.dates}
@@ -261,16 +271,6 @@ export default function Admin() {
             />
             <div style={{ marginTop: 16 }}>
               <ResultsList dates={event.dates} participants={event.participants} />
-            </div>
-            <div className="share-row">
-              <Link className="btn-secondary" to={`/${event.share_token}`}>
-                {editTokenFor(event.share_token)
-                  ? 'Edit your availability'
-                  : 'Add your availability'}
-              </Link>
-              <button type="button" className="btn-secondary" onClick={startEditing}>
-                Edit title or dates
-              </button>
             </div>
           </>
         )}
