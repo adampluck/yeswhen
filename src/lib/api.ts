@@ -44,6 +44,10 @@ export function updateEvent(adminToken: string, title: string, dates: DateStr[])
   })
 }
 
+export function deleteEvent(adminToken: string) {
+  return rpc<boolean>('yw_delete_event', { p_admin_token: adminToken })
+}
+
 export function deleteResponse(adminToken: string, participantId: string) {
   return rpc<boolean>('yw_delete_response', {
     p_admin_token: adminToken,

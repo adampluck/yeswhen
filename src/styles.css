@@ -306,6 +306,17 @@ a.btn-share:active {
   border-color: #fcd34d;
 }
 
+.admin-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-secondary.danger {
+  color: var(--danger);
+  border-color: #fecaca;
+}
+
 .card.organiser {
   background: transparent;
   border: 1.5px dashed var(--border);

@@ -5,6 +5,7 @@ import ResultsList from '../components/ResultsList'
 import ShareCard from '../components/ShareCard'
 import {
   type AdminEventData,
+  deleteEvent,
   deleteResponse,
   getEvent,
   getEventAdmin,
@@ -15,6 +16,7 @@ import {
   editTokenFor,
   forgetAdminForShare,
   forgetAdminToken,
+  forgetEditToken,
   rememberAdminForShare,
   rememberAdminToken,
 } from '../lib/tokens'
@@ -166,6 +168,21 @@ export default function Admin() {
     }
   }
 
+  const removeEvent = async () => {
+    if (!window.confirm(`Delete “${event.title}” for everyone? This can't be undone.`)) {
+      return
+    }
+    try {
+      await deleteEvent(adminToken)
+      forgetAdminToken(adminToken)
+      forgetAdminForShare(event.share_token)
+      forgetEditToken(event.share_token)
+      navigate('/')
+    } catch {
+      setError('Could not delete the event.')
+    }
+  }
+
   const removeParticipant = async (id: string, name: string) => {
     if (!window.confirm(`Remove ${name}'s response?`)) return
     try {
@@ -187,13 +204,22 @@ export default function Admin() {
           Organiser view · {event.participants.length}{' '}
           {event.participants.length === 1 ? 'response' : 'responses'}
         </p>
-        <button
-          type="button"
-          className={`btn-secondary organiser-toggle${justCreated && !showOrganiserLink ? ' attention' : ''}`}
-          onClick={() => setShowOrganiserLink(!showOrganiserLink)}
-        >
-          🔑 Organiser link
-        </button>
+        <div className="admin-actions">
+          <button
+            type="button"
+            className={`btn-secondary organiser-toggle${justCreated && !showOrganiserLink ? ' attention' : ''}`}
+            onClick={() => setShowOrganiserLink(!showOrganiserLink)}
+          >
+            🔑 Organiser link
+          </button>
+          <button
+            type="button"
+            className="btn-secondary organiser-toggle danger"
+            onClick={removeEvent}
+          >
+            Delete
+          </button>
+        </div>
       </div>
 
       {showOrganiserLink && (
