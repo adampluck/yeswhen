@@ -38,7 +38,7 @@ export default function Home() {
       }
       chime()
       // Route by share token — the admin secret never sits in the address bar.
-      navigate(`/a/${share_token}`, { state: { justCreated: true } })
+      navigate(`/admin/${share_token}`, { state: { justCreated: true } })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong — please try again.')
       setBusy(false)
@@ -103,7 +103,7 @@ export default function Home() {
           <h2>Your events on this device</h2>
           {myEvents.map(({ token, title: t }) => (
             <div key={token} className="participant-row">
-              <Link to={`/a/${token}`}>{t || 'Untitled event'}</Link>
+              <Link to={`/admin/${token}`}>{t || 'Untitled event'}</Link>
             </div>
           ))}
         </div>

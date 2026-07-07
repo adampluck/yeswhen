@@ -74,7 +74,7 @@ export default function Admin() {
           setAdminToken(token)
           setEvent(asAdmin)
           // Swap the secret out of the address bar.
-          navigate(`/a/${asAdmin.share_token}`, { replace: true, state: location.state })
+          navigate(`/admin/${asAdmin.share_token}`, { replace: true, state: location.state })
           return
         }
         forgetAdminToken(token)
@@ -83,7 +83,7 @@ export default function Admin() {
         const asShare = await getEvent(token)
         if (cancelled) return
         if (asShare) {
-          navigate(`/e/${token}`, { replace: true })
+          navigate(`/${token}`, { replace: true })
           return
         }
         setNotFound(true)
@@ -142,8 +142,8 @@ export default function Admin() {
     )
   }
 
-  const adminUrl = absUrl(`/a/${adminToken}`)
-  const shareUrl = absUrl(`/e/${event.share_token}`)
+  const adminUrl = absUrl(`/admin/${adminToken}`)
+  const shareUrl = absUrl(`/${event.share_token}`)
   const counts = voteCounts(event)
 
   const startEditing = () => {
@@ -241,7 +241,7 @@ export default function Admin() {
               <ResultsList dates={event.dates} participants={event.participants} />
             </div>
             <div className="share-row">
-              <Link className="btn-secondary" to={`/e/${event.share_token}`}>
+              <Link className="btn-secondary" to={`/${event.share_token}`}>
                 {editTokenFor(event.share_token)
                   ? 'Edit your availability'
                   : 'Add your availability'}
