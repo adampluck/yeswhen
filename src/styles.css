@@ -285,63 +285,40 @@ a.btn-share:active {
   box-shadow: none;
 }
 
-/* ---- organiser link: out of the page, in a bottom sheet ---- */
+/* ---- organiser link: small toggle in the header, quiet panel below ---- */
+
+.admin-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.admin-top .tagline {
+  margin: 0;
+}
 
 .organiser-toggle {
-  display: block;
-  margin: 8px auto 0;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  flex-shrink: 0;
 }
 
-@keyframes backdrop-in {
-  from {
-    opacity: 0;
-  }
+.organiser-toggle.attention {
+  background: #fffbeb;
+  border-color: #fcd34d;
 }
 
-@keyframes sheet-up {
-  from {
-    transform: translateY(40px);
-    opacity: 0;
-  }
+.card.organiser {
+  background: transparent;
+  border: 1.5px dashed var(--border);
+  box-shadow: none;
 }
 
-.sheet-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(43, 35, 32, 0.45);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 10;
-  animation: backdrop-in 0.2s ease;
-}
-
-.sheet {
-  background: var(--card);
-  border-radius: 20px 20px 0 0;
-  width: 100%;
-  max-width: 480px;
-  padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
-  animation: sheet-up 0.25s ease;
-}
-
-.sheet h2 {
-  font-size: 1.1rem;
-  margin: 0 0 8px;
-}
-
-.sheet-done {
-  margin-top: 16px;
-}
-
-@media (min-width: 560px) {
-  .sheet-backdrop {
-    align-items: center;
-    padding: 24px;
-  }
-  .sheet {
-    border-radius: 20px;
-  }
+.card.organiser .link-box {
+  background: transparent;
 }
 
 /* ---- calendar ---- */

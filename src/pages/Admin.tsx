@@ -46,7 +46,7 @@ export default function Admin() {
   const [editTitle, setEditTitle] = useState('')
   const [editDates, setEditDates] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
-  const [sheetOpen, setSheetOpen] = useState(justCreated)
+  const [showOrganiserLink, setShowOrganiserLink] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -182,10 +182,32 @@ export default function Admin() {
         yes<span>when</span>
       </Link>
       <h1>{event.title}</h1>
-      <p className="tagline">
-        Organiser view · {event.participants.length}{' '}
-        {event.participants.length === 1 ? 'response' : 'responses'}
-      </p>
+      <div className="admin-top">
+        <p className="tagline">
+          Organiser view · {event.participants.length}{' '}
+          {event.participants.length === 1 ? 'response' : 'responses'}
+        </p>
+        <button
+          type="button"
+          className={`btn-secondary organiser-toggle${justCreated && !showOrganiserLink ? ' attention' : ''}`}
+          onClick={() => setShowOrganiserLink(!showOrganiserLink)}
+        >
+          🔑 Organiser link
+        </button>
+      </div>
+
+      {showOrganiserLink && (
+        <div className="card organiser">
+          <p className="hint">
+            The only way back to this page — send it to yourself and keep it private.
+          </p>
+          <ShareCard
+            url={adminUrl}
+            subject={`Organiser link — ${event.title}`}
+            message={`My organiser link for “${event.title}” (keep this private):`}
+          />
+        </div>
+      )}
 
       {error && <div className="error">{error}</div>}
 
@@ -275,34 +297,6 @@ export default function Admin() {
         </div>
       )}
 
-      <button type="button" className="btn-ghost organiser-toggle" onClick={() => setSheetOpen(true)}>
-        🔑 Organiser link
-      </button>
-
-      {sheetOpen && (
-        <div className="sheet-backdrop" onClick={() => setSheetOpen(false)}>
-          <div className="sheet" onClick={(e) => e.stopPropagation()}>
-            <h2>🔑 Your organiser link</h2>
-            <p className="hint">
-              The only way back to this page — send it to yourself and keep it private.
-              (The link in your address bar is safe to ignore: it only ever invites
-              people.)
-            </p>
-            <ShareCard
-              url={adminUrl}
-              subject={`Organiser link — ${event.title}`}
-              message={`My organiser link for “${event.title}” (keep this private):`}
-            />
-            <button
-              type="button"
-              className="btn-primary sheet-done"
-              onClick={() => setSheetOpen(false)}
-            >
-              {justCreated ? "Done — I've saved it" : 'Close'}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
