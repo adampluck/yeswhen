@@ -3,7 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import DragCalendar from '../components/DragCalendar'
 import { addResponse, createEvent } from '../lib/api'
 import { chime } from '../lib/sounds'
-import { knownAdminEvents, rememberAdminToken, rememberEditToken } from '../lib/tokens'
+import {
+  knownAdminEvents,
+  rememberAdminForShare,
+  rememberAdminToken,
+  rememberEditToken,
+} from '../lib/tokens'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -20,6 +25,7 @@ export default function Home() {
     try {
       const { admin_token, share_token } = await createEvent(title.trim(), dates)
       rememberAdminToken(admin_token, title.trim())
+      rememberAdminForShare(share_token, admin_token)
       // If the organiser gave their name, count them in for the dates they
       // painted — they can adjust via the invite page any time.
       if (name.trim() !== '') {
@@ -31,7 +37,8 @@ export default function Home() {
         }
       }
       chime()
-      navigate(`/a/${admin_token}`, { state: { justCreated: true } })
+      // Route by share token — the admin secret never sits in the address bar.
+      navigate(`/a/${share_token}`, { state: { justCreated: true } })
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Something went wrong — please try again.')
       setBusy(false)

@@ -1,15 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import DragCalendar from '../components/DragCalendar'
 import ResultsList from '../components/ResultsList'
 import ShareCard from '../components/ShareCard'
 import {
   type AdminEventData,
   deleteResponse,
+  getEvent,
   getEventAdmin,
   updateEvent,
 } from '../lib/api'
-import { editTokenFor, forgetAdminToken, rememberAdminToken } from '../lib/tokens'
+import {
+  adminTokenForShare,
+  editTokenFor,
+  forgetAdminForShare,
+  forgetAdminToken,
+  rememberAdminForShare,
+  rememberAdminToken,
+} from '../lib/tokens'
 import { absUrl } from '../lib/urls'
 
 function voteCounts(event: AdminEventData): Record<string, number> {
@@ -21,9 +29,15 @@ function voteCounts(event: AdminEventData): Record<string, number> {
 }
 
 export default function Admin() {
+  // The URL param is the *share* token for devices that own the event (kept in
+  // the address bar so accidentally sharing it only ever invites people), or an
+  // admin token when arriving via a saved organiser link on a new device.
   const { token = '' } = useParams()
-  const justCreated = Boolean(useLocation().state?.justCreated)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const justCreated = Boolean(location.state?.justCreated)
 
+  const [adminToken, setAdminToken] = useState<string | null>(null)
   const [event, setEvent] = useState<AdminEventData | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -32,28 +46,70 @@ export default function Admin() {
   const [editTitle, setEditTitle] = useState('')
   const [editDates, setEditDates] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
-  const [showAdminLink, setShowAdminLink] = useState(justCreated)
-
-  const load = useCallback(async () => {
-    try {
-      const data = await getEventAdmin(token)
-      if (!data) {
-        setNotFound(true)
-        forgetAdminToken(token)
-      } else {
-        setEvent(data)
-        rememberAdminToken(token, data.title)
-      }
-    } catch {
-      setError('Could not load the event. Check your connection and try again.')
-    }
-  }, [token])
+  const [sheetOpen, setSheetOpen] = useState(justCreated)
 
   useEffect(() => {
-    load()
-  }, [load])
+    let cancelled = false
+    async function resolve() {
+      try {
+        // 1. Share token that this device has admin rights for?
+        const known = adminTokenForShare(token)
+        if (known) {
+          const data = await getEventAdmin(known)
+          if (cancelled) return
+          if (data) {
+            setAdminToken(known)
+            setEvent(data)
+            rememberAdminToken(known, data.title)
+            return
+          }
+          forgetAdminForShare(token)
+        }
+        // 2. An organiser link (saved via email/WhatsApp) on a fresh device?
+        const asAdmin = await getEventAdmin(token)
+        if (cancelled) return
+        if (asAdmin) {
+          rememberAdminForShare(asAdmin.share_token, token)
+          rememberAdminToken(token, asAdmin.title)
+          setAdminToken(token)
+          setEvent(asAdmin)
+          // Swap the secret out of the address bar.
+          navigate(`/a/${asAdmin.share_token}`, { replace: true, state: location.state })
+          return
+        }
+        forgetAdminToken(token)
+        // 3. Someone without admin rights following a copied address-bar URL —
+        //    treat it as the invite it looks like.
+        const asShare = await getEvent(token)
+        if (cancelled) return
+        if (asShare) {
+          navigate(`/e/${token}`, { replace: true })
+          return
+        }
+        setNotFound(true)
+      } catch {
+        if (!cancelled) {
+          setError('Could not load the event. Check your connection and try again.')
+        }
+      }
+    }
+    resolve()
+    return () => {
+      cancelled = true
+    }
+  }, [token]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Pick up new responses when the admin returns to the tab.
+  const load = useCallback(async () => {
+    if (!adminToken) return
+    try {
+      const data = await getEventAdmin(adminToken)
+      if (data) setEvent(data)
+    } catch {
+      // Keep showing the last good state; refetch happens again on focus.
+    }
+  }, [adminToken])
+
+  // Pick up new responses when the organiser returns to the tab.
   useEffect(() => {
     const onFocus = () => load()
     window.addEventListener('focus', onFocus)
@@ -67,15 +123,15 @@ export default function Admin() {
           yes<span>when</span>
         </Link>
         <div className="error">
-          This admin link doesn't match any event. Double-check the URL — it must be
-          copied exactly.
+          This link doesn't match any event. Double-check the URL — it must be copied
+          exactly.
         </div>
         <Link to="/">← Create a new event</Link>
       </div>
     )
   }
 
-  if (!event) {
+  if (!event || !adminToken) {
     return (
       <div className="page">
         <Link className="brand" to="/">
@@ -86,7 +142,7 @@ export default function Admin() {
     )
   }
 
-  const adminUrl = absUrl(`/a/${token}`)
+  const adminUrl = absUrl(`/a/${adminToken}`)
   const shareUrl = absUrl(`/e/${event.share_token}`)
   const counts = voteCounts(event)
 
@@ -100,7 +156,7 @@ export default function Admin() {
     setBusy(true)
     setError(null)
     try {
-      await updateEvent(token, editTitle.trim(), editDates)
+      await updateEvent(adminToken, editTitle.trim(), editDates)
       setEditing(false)
       await load()
     } catch (e) {
@@ -113,7 +169,7 @@ export default function Admin() {
   const removeParticipant = async (id: string, name: string) => {
     if (!window.confirm(`Remove ${name}'s response?`)) return
     try {
-      await deleteResponse(token, id)
+      await deleteResponse(adminToken, id)
       await load()
     } catch {
       setError('Could not remove that response.')
@@ -141,37 +197,6 @@ export default function Admin() {
           message={`When could you make “${event.title}”? Tap the dates that work for you:`}
         />
       </div>
-
-      {showAdminLink ? (
-        <div className={`card organiser${justCreated ? ' fresh' : ''}`}>
-          <h2>🔑 Your organiser link</h2>
-          <p className="hint">
-            The only way back to this page — send it to yourself and keep it private.
-          </p>
-          <ShareCard
-            url={adminUrl}
-            subject={`Organiser link — ${event.title}`}
-            message={`My organiser link for “${event.title}” (keep this private):`}
-          />
-          {!justCreated && (
-            <button
-              type="button"
-              className="btn-ghost organiser-toggle"
-              onClick={() => setShowAdminLink(false)}
-            >
-              Hide
-            </button>
-          )}
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="btn-ghost organiser-toggle"
-          onClick={() => setShowAdminLink(true)}
-        >
-          🔑 Save your organiser link
-        </button>
-      )}
 
       <div className="card">
         <h2>Availability so far</h2>
@@ -247,6 +272,35 @@ export default function Admin() {
               </button>
             </div>
           ))}
+        </div>
+      )}
+
+      <button type="button" className="btn-ghost organiser-toggle" onClick={() => setSheetOpen(true)}>
+        🔑 Organiser link
+      </button>
+
+      {sheetOpen && (
+        <div className="sheet-backdrop" onClick={() => setSheetOpen(false)}>
+          <div className="sheet" onClick={(e) => e.stopPropagation()}>
+            <h2>🔑 Your organiser link</h2>
+            <p className="hint">
+              The only way back to this page — send it to yourself and keep it private.
+              (The link in your address bar is safe to ignore: it only ever invites
+              people.)
+            </p>
+            <ShareCard
+              url={adminUrl}
+              subject={`Organiser link — ${event.title}`}
+              message={`My organiser link for “${event.title}” (keep this private):`}
+            />
+            <button
+              type="button"
+              className="btn-primary sheet-done"
+              onClick={() => setSheetOpen(false)}
+            >
+              {justCreated ? "Done — I've saved it" : 'Close'}
+            </button>
+          </div>
         </div>
       )}
     </div>

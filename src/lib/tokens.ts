@@ -3,6 +3,7 @@
 
 const ADMIN_KEY = 'yeswhen.admin'
 const EDIT_KEY = 'yeswhen.edit'
+const ADMIN_FOR_SHARE_KEY = 'yeswhen.adminForShare'
 
 function read(key: string): Record<string, string> {
   try {
@@ -34,6 +35,25 @@ export function forgetAdminToken(adminToken: string) {
   const all = read(ADMIN_KEY)
   delete all[adminToken]
   write(ADMIN_KEY, all)
+}
+
+// The address bar shows the *share* token on the admin page (so accidentally
+// sharing it never leaks admin rights); this maps it back to the admin token
+// for devices that own the event.
+export function rememberAdminForShare(shareToken: string, adminToken: string) {
+  const all = read(ADMIN_FOR_SHARE_KEY)
+  all[shareToken] = adminToken
+  write(ADMIN_FOR_SHARE_KEY, all)
+}
+
+export function adminTokenForShare(shareToken: string): string | undefined {
+  return read(ADMIN_FOR_SHARE_KEY)[shareToken]
+}
+
+export function forgetAdminForShare(shareToken: string) {
+  const all = read(ADMIN_FOR_SHARE_KEY)
+  delete all[shareToken]
+  write(ADMIN_FOR_SHARE_KEY, all)
 }
 
 export interface MyResponse {
