@@ -1,0 +1,2 @@
+-- Placeholder matching an existing migration in the shared Taskman project.
+-- Never executed: this version is already in the remote history table.
